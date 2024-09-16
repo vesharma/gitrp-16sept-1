@@ -4,7 +4,7 @@ http://chenghsuan.me/posts/logrotate-with-ansible
 https://aandhsolutions.com/blog/add-logrotate-to-a-machine-using-ansible/
 https://github.com/robertdebock/ansible-role-logrotate/blob/master/README.md
 https://stackoverflow.com/questions/58389314/logrotate-with-ansible-playbook?newreg=b4a29b8a0afa4d56b4652d014c021aad
-
+https://github.com/nickhammond/ansible-logrotate/blob/master/tests/test.yml
 https://spacelift.io/blog/ansible-roles
 
 
