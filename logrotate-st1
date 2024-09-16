@@ -1,0 +1,54 @@
+http://chenghsuan.me/posts/logrotate-with-ansible
+https://github.com/nickhammond/ansible-logrotate/blob/master/tasks/main.yml
+http://chenghsuan.me/posts/logrotate-with-ansible
+https://aandhsolutions.com/blog/add-logrotate-to-a-machine-using-ansible/
+https://github.com/robertdebock/ansible-role-logrotate/blob/master/README.md
+https://stackoverflow.com/questions/58389314/logrotate-with-ansible-playbook?newreg=b4a29b8a0afa4d56b4652d014c021aad
+
+Example - Managing Rails Logfile with Logrotate
+Details
+Triggers hourly
+Rotate when log file is bigger than 100M
+Only keep 10 copies
+Configuring Ansible for Logrotate
+roles/logrotate/tasks/main.yml
+- name: set up logrotate for rails log
+  template:
+    src: rails.j2
+    dest: /etc/logrotate.d/rails
+    owner: root
+    group: root
+    mode: 0644
+
+- name: ensure logrotate is in /etc/cron.hourly
+  file:
+    src: /etc/cron.daily/logrotate
+    dest: /etc/cron.hourly/logrotate
+    state: link
+    force: yes
+    mode: 0755 # the file needs to be excutable
+roles/logrotate/templates/rails.j2
+Modify /path/to/your/rails/log/.log to your logfile’s path on your machine.
+
+/path/to/your/rails/log/.log {
+    size 100M             # triggers when file is bigger than 100M
+    dateext               # use date extension
+    dateformat -%Y%m%d-%s # the extention format
+    rotate 10             # keep 10 files
+    copytruncate          # truncates the original file
+    missingok             # does not throw error if the file is missing
+    notifempty            # does not rotate if the file is empty
+}
+Provisioning Logrotate with Ansible
+Refer to Executing playbooks.
+
+Bonus
+Checking whether Logrotate can be Called by Cron
+# Should print "/etc/cron.hourly/logrotate"
+$ run-parts --test /etc/cron.hourly
+Getting File/Directory Permission Numerical Value in Linux
+I usually use sites like Chmod Calculator to map values.
+
+$ stat --format '%a' <filename>
+Finding out when cron.hourly Really Executes
+$ cat /etc/cron.d/0hourly
