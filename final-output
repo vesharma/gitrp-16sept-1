@@ -1,0 +1,103 @@
+---
+ - hosts: localhost
+   become: true
+   vars:
+     lp_logrotate_confd:
+      - path: ansible
+        conf: |
+          /var/log/ansible.log{
+             daily
+             weekly
+             rotate 3
+             size 20K
+             missingok
+             compress
+             delaycompress
+             copytruncate
+             notifempty
+             maxage 0
+          }
+   tasks:
+   - name: Check if logrotate rpm is installed
+     command: rpm -q logrotate*.rpm
+     register: rpm_check
+
+   - name: insall logrotate package
+     yum:
+        name: logrotate
+        state: present
+     register: package_isexist
+     when: rpm_check.stdout.find('is not installed') != -1
+
+   - name: debug package exist
+     debug:
+       msg: "{{ package_isexist }}"
+
+   - name: stat file exist
+     stat:
+        path: "/etc/logrotate.d/ansible"
+     register: file_isexist
+
+   - name: stat directory exist
+     stat:
+        path: "/etc/logrotate.d"
+     register: dir_isexist
+
+   - name: check dir exist
+     debug:
+       msg: "the directory exist"
+     when: dir_isexist.stat.exists and dir_isexist.stat.isdir
+
+
+   - name: check file exist
+     debug:
+       msg: "file exist"
+     when: file_isexist.stat.exists and file_isexist.stat.isreg
+
+   - name: if file not exist
+     debug:
+        msg: "file not found"
+     when: file_isexist.stat.exists == False
+
+   - name: create logrtoate conf
+     blockinfile:
+        path: "/etc/logrotate.d/{{item.path}}"
+        block: "{{item.conf}}"
+        create: true
+        mode: "0644"
+        owner: "logrotate"
+        group: "logrotate"
+     loop: "{{ lp_logrotate_confd}}"
+     ignore_errors: true
+     when: not file_isexist.stat.exists
+
+   - name: check logrotate can called cron
+     shell: |
+         run-parts --test /etc/cron.hourly
+     register: sc_cron
+
+   - name: check cron result
+     debug:
+        msg: "{{sc_cron.stdout_lines}}"
+
+   - name: check cron.hourly
+     shell: |
+        cat /etc/cron.d/0hourly
+     register: sc_cronhourly
+
+   - name: output of hourly
+     debug:
+        msg: "{{ sc_cronhourly.stdout_lines }}"
+
+   - name: "run logrotate.conf to move all logs daily"
+     shell: |
+           logrotate -f /etc/logrotate.conf
+     register: logrotate_conf_output
+     ignore_errors: true
+
+   - name:  "output of logrotate.conf"
+     debug:
+        msg: "{{logrotate_conf_output.stdout_lines}}"
+
+
+
