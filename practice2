@@ -1,4 +1,6 @@
-his blog post deep dives into Ansible Variables, which allow us to parametrize different Ansible components. Variables store values for reuse inside an Ansible project. 
+
+https://www.baeldung.com/linux/ansible-list-variables-host-group
+This blog post deep dives into Ansible Variables, which allow us to parametrize different Ansible components. Variables store values for reuse inside an Ansible project. 
 
 If you are still learning how to use Ansible, you might also find the introductory Ansible Tutorial or Working with Ansible Playbooks blog posts helpful. You can find this article’s code on this repository if you wish to follow along.
 
