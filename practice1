@@ -1,0 +1,51 @@
+shell> cat add_host_to_groups.yml
+- add_host:
+    name: "{{ i }}"
+    groups: "{{ item }}{{ (i.split('.')).1 }}"
+  loop: "{{ _hosts }}"
+  loop_control:
+    loop_var: i
+and include it in the loop of the assignment rules
+
+- hosts: all
+  gather_facts: false
+  vars:
+    env:
+      web: app05
+  tasks:
+    - include_tasks: add_host_to_groups.yml
+      loop: "{{ env.keys()|list }}"
+      vars:
+        _hosts: "{{ ansible_play_hosts_all|select('match', env[item] ~ '.*') }}"
+      run_once: true
+    - debug:
+        var: groups
+      run_once: true
+gives
+
+  groups:
+    all:
+    - app01.dev.domain.com
+    - app02.dev.domain.com
+    - app03.dev.domain.com
+      ...
+    - app25.prod.domain.com
+    webdev:
+    - app05.dev.domain.com
+    webprod:
+    - app05.prod.domain.com
+    webqa:
+    - app05.qa.domain.com
+    webuat:
+    - app05.uat.domain.com
+Use the groups in consecutive plays, e.g.
+
+- hosts: webqa
+  gather_facts: false
+  tasks:
+    - debug:
+        var: ansible_play_hosts_all
+gives
+
+  ansible_play_hosts_all:
+  - app05.qa.domain.com
